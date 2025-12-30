@@ -1,0 +1,295 @@
+#include <iomanip>
+#include <fstream>
+#include <sstream>
+
+#include "AlaskanCruise.h"
+
+int AlaskanCruise::resNumber = 0;
+
+AlaskanCruise::AlaskanCruise(
+   string resName,
+   int numPass,
+   int numDays,
+   int numEx,
+   Date booking,
+   Date departure
+) :
+   reservation(resName),
+   numberOfPass(numPass),
+   numberDaysCruise(numDays),
+   numberOfExcursions(numEx),
+   book(booking),
+   dep(departure)
+{
+   ValidateInput();
+}
+
+
+void AlaskanCruise::SetDates(Date& bk, Date& dpt)
+{
+   book = bk;
+   dep  = dpt;
+
+   ValidateInput();
+}
+
+void AlaskanCruise::CalculateFare()
+{
+   // Calculate the total fare
+
+   fare = 0.0;
+
+   if(numberDaysCruise == 7)
+      fare += numberOfPass * FARE_SEVEN;
+
+   else
+      fare += numberOfPass * FARE_NINE;
+
+   numDaysToDepart = dep.GetDayOfYear() - book.GetDayOfYear();
+
+   if(numDaysToDepart < DAYS_TO_DEPART_REQD)
+      fare =  (1.0 - DISCOUNT_PERCENT / 100.0) * fare;
+}
+
+void AlaskanCruise::ValidateInput()
+{
+   std::ostringstream out;
+
+   bValidInput = false;
+
+   if(reservation == "")
+      out << "reservation name is blank";
+
+   else if(!book.ValidateThisDate())
+      out << "invalid booking date: " << book.GetFormattedDate();
+
+   else if(!dep.ValidateThisDate())
+      out << "Invalid departure date: " << dep.GetFormattedDate();
+
+   else if(book.GetYear() != dep.GetYear())
+      out << "can only book and depart within the current year: " << dep.GetFormattedDate();
+
+   else if(book.GetDayOfYear() >= dep.GetDayOfYear())
+      out << 
+         "departure date most be later than booking date: " <<
+         book.GetFormattedDate() << " " << dep.GetFormattedDate();
+
+   else
+      bValidInput = true;
+
+   if(!bValidInput)
+      dateString = "Cannot calculate fare, " + out.str();
+}
+
+string AlaskanCruise::ReservationDescription()
+{
+   if(!bValidInput)
+      return(dateString);
+
+   CalculateFare();
+
+   std::ostringstream out;
+
+   out <<
+      "reservation name    : " << reservation << "\n" <<
+      "number of passengers: " << numberOfPass << "\n" <<
+      "booking date        : " << book.GetFormattedDate() << "\n" <<
+      "travel date         : " << dep.GetFormattedDate() <<  "\n" <<
+      "number of excursions: " << numberOfExcursions     <<  "\n" <<
+      "fare                : " << std::fixed << std::setprecision(2) << fare << "\n";
+
+   dateString = out.str();
+(
+   WriteReservationConfirmation();
+
+   return(dateString);
+}
+
+void AlaskanCruise::WriteReservationConfirmation()
+{
+   std::ostringstream out;
+
+   out << reservation << "_" << resNumber++ << ".txt";
+
+   filename = out.str();
+
+   std::ofstream output(filename);
+
+   if(output)
+   {
+      output << dateString << "\n";
+      bWrite = true;
+   }
+}
+
+
+
+#pragma once
+#ifndef ALASKAN_CRUISE_H
+#  define ALASKAN_CRUISE_H
+
+#  include <string>
+#  include "Date.h"
+
+   using std::string;
+
+   class AlaskanCruise
+   {
+      private:
+
+   	//constants
+
+   	const double FARE_SEVEN{1999.00};
+   	const double FARE_NINE{2539.00};
+   	const int    DISCOUNT_PERCENT{60};
+   	const int    DAYS_TO_DEPART_REQD{90};
+   	const int    DAYS_YEAR{365};
+
+   	string reservation;	//passenger name for this reservation
+
+      //string containing all of the information, has error string if bValidDate is false
+      string dateString;
+
+   	int numberOfPass{ 1 };	//number of passengers booked under this res 1 or 2
+
+   	Date book, dep;	 //pertinent dated
+
+      bool bValidInput{ false }, bWrite{ false}; //whether input is valid and whether file was written
+
+   	double fare{ 1.0 };	//Calculated based on user input, does not include excursions
+
+   	int numDaysToDepart{ 1 };  //number of days between booking and departure
+   	int numberDaysCruise{ 7 }, numberOfExcursions{ 0 }; // length of the cruise
+                                                          // and number of excursions	
+
+   	static int resNumber;	//declare the static variable
+   	string filename;		//filename of reservation confirmation
+
+   	void CalculateFare();
+   	void ValidateInput();
+
+      void WriteReservationConfirmation();	//Creates the filename and writes the reservation summary
+
+   public:
+
+   	AlaskanCruise() = default;
+   	AlaskanCruise(string resName, int numPass, int numDays, int numEx, Date booking, Date departure);
+   	void SetNumberOfPass(int n) { numberOfPass = n; }	//how many people?		
+   	void SetDates(Date& bk, Date& dpt);
+   	void SetReservationName(string name) { reservation = name; }
+   	void SetCruiseLength(int len) { numberDaysCruise = len; }
+	
+      //Creates reservation summary and calls WriteReservationDescription()
+      string ReservationDescription(); 
+
+      double GetTotalFare() const { return fare; }
+      bool IsValidInput() const { return bValidInput; }
+      string GetFilename() const { return filename; }
+
+      bool IsFileWritten()const { return bWrite; }
+   };
+
+#endif
+
+
+/************************************************************************************
+ * Program   : Alaskan Cruise Line
+ * Programmer: Daudi Mlengela(dmlengela@cnm.edu)
+ ************************************************************************************/
+
+#include <iostream>
+#include "AlaskanCruise.h"
+
+AlaskanCruise makeReservation()
+{
+   string name;
+   std::cout << "Enter reservation name: ";
+
+   std::getline(std::cin, name);
+
+   int nPeople = 0;
+   std::cout << "How many people in the party? (1 or 2) ";
+
+   std::cin >> nPeople;
+
+   int nDays = 0;
+   std::cout << "How many days? (7 or 9) ";
+   
+   std::cin >> nDays;
+
+   int nExcursions = 0;
+   std::cout << "How many excursions will the party purchase? ";
+
+   std::cin >> nExcursions;
+
+   int year  = 0;
+   int month = 0;
+   int day   = 0;
+
+   std::cout << "Departure year : "; std::cin >> year;
+   std::cout << "Departure month: "; std::cin >> month;
+   std::cout << "Departure day  : "; std::cin >> day;
+
+   string rest;
+   std::getline(std::cin, rest);
+
+   Date booking;
+   Date departure(month, day, year, "Departure date for: " + name);
+
+   AlaskanCruise cruise(
+      name,
+      nPeople,
+      nDays,
+      nExcursions,
+      booking,
+      departure
+   );
+
+   return(cruise);
+}
+
+char getFirst(const string &s)
+{
+   for(size_t i = 0; i < s.size(); i ++)
+      if(isalpha(s[i]))
+         return((char)tolower(s[i]));
+
+   return('\0');
+}
+
+int main()
+{
+   bool keepGoing = true;
+   string line;
+
+   while(keepGoing)
+   {
+      AlaskanCruise cruise = makeReservation();
+
+      if(!cruise.IsValidInput())
+      {
+         std::cout << "Invalid input: " << cruise.ReservationDescription() << "\n";
+      }
+      else
+      {
+         string desc = cruise.ReservationDescription();
+
+         if(cruise.IsFileWritten())
+         {
+            desc += "Wrote: " + cruise.GetFilename();
+
+            std::cout << desc << "\n";
+         }
+         else
+         {
+            std::cout << "No file was written\n";
+         }
+      }
+
+      std::cout << "Do another? (y/n) ";
+      std::getline(std::cin, line);
+
+      if(getFirst(line) != 'y')
+         break;
+   }
+}
