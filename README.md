@@ -12,7 +12,7 @@ We’re going to write a class that represents the reservation data for an indiv
 
 Your job is  to write the _AlaskanCruise_ class and a form to test the class.  **Each reservation will be a unique object.  Use the overloaded constructor to create the object in the event handler for the _MakeReservation_ button**.
 
-Present the Cruise information on the Form to explain the terms to the user.  Here are the cruise/tour choices:  7-day cruise, 9-day cruise.   They are both  Inside Passage cruises, round-trip from Vancouver, BC to Skagway, Alaska. The 7-day cruise  stops at the Twin Sawyer Glaciers in Skagway, Juneau, and Ketchikan, Alaska.  The 9-day cruise adds the ports of Sitka, and Prince Rupert.  
+Present the Cruise information on the Form to explain the terms to the user.  Here are the cruise/tour choices:  7-day cruise, 9-day cruise.   They are both  Inside Passage cruises, round-trip from Vancouver, BC to Skagway, Alaska. The 7-day cruise  stops at the Twin Sawyer Glaciers in Skagway, Juneau, and Ketchikan, Alaska.  The 9-day cruise adds the ports of Sitka, and Prince Rupert.
 
 The base fare for the C++ Alaskan Cruises is $1999.00 per person for the 7-day cruise.  The 9-Day cruise is $2539.  There is a 60% discount if the cruise is booked <ins>less than</ins> 90 days in advance.  There are excursions  available for purchase for each port.  There are guided tours or activities specific to the location.  They cost $325.00 for each excursion per person.  So if there are 3 excursions ordered, that will be $325 * 3 =  $975.00
 
