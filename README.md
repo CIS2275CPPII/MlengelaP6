@@ -1,4 +1,4 @@
-# The C++ Alaskan Cruise
+# The C++ Alaskan Cruise: 
 
 <img width="1005" height="647" alt="image" src="https://github.com/user-attachments/assets/96e9d199-abba-434f-92b2-5814dc4e242b" />
 
